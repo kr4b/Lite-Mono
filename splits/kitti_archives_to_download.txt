@@ -1,0 +1,1 @@
+../../monodepth2/splits/kitti_archives_to_download.txt
