@@ -626,7 +626,12 @@ class Trainer:
     def save_model(self):
         """Save model weights to disk
         """
-        save_folder = os.path.join(self.log_path, "models", "weights_{}".format(self.epoch))
+        index = self.epoch
+        if self.opt.load_weights_folder is not None:
+            offset = int(self.opt.load_weights_folder.split("_")[-1])
+            index += offset + 1
+
+        save_folder = os.path.join(self.log_path, "models", "weights_{}".format(index))
         if not os.path.exists(save_folder):
             os.makedirs(save_folder)
 
