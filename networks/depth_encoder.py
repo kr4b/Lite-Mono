@@ -310,6 +310,8 @@ class LiteMono(nn.Module):
                 self.dilation = [[1, 2, 3], [1, 2, 3], [1, 2, 3, 1, 2, 3, 2, 4, 6]]
             elif height == 320 and width == 1024:
                 self.dilation = [[1, 2, 5], [1, 2, 5], [1, 2, 5, 1, 2, 5, 2, 4, 10]]
+            else:
+                self.dilation = [[1, 2, 3], [1, 2, 3], [1, 2, 3, 1, 2, 3, 2, 4, 6]]
 
         elif model == 'lite-mono-small':
             self.num_ch_enc = np.array([48, 80, 128])
@@ -319,6 +321,8 @@ class LiteMono(nn.Module):
                 self.dilation = [[1, 2, 3], [1, 2, 3], [1, 2, 3, 2, 4, 6]]
             elif height == 320 and width == 1024:
                 self.dilation = [[1, 2, 5], [1, 2, 5], [1, 2, 5, 2, 4, 10]]
+            else:
+                self.dilation = [[1, 2, 3], [1, 2, 3], [1, 2, 3, 2, 4, 6]]
 
         elif model == 'lite-mono-tiny':
             self.num_ch_enc = np.array([32, 64, 128])
@@ -328,6 +332,8 @@ class LiteMono(nn.Module):
                 self.dilation = [[1, 2, 3], [1, 2, 3], [1, 2, 3, 2, 4, 6]]
             elif height == 320 and width == 1024:
                 self.dilation = [[1, 2, 5], [1, 2, 5], [1, 2, 5, 2, 4, 10]]
+            else:
+                self.dilation = [[1, 2, 3], [1, 2, 3], [1, 2, 3, 2, 4, 6]]
 
         elif model == 'lite-mono-8m':
             self.num_ch_enc = np.array([64, 128, 224])
@@ -336,6 +342,8 @@ class LiteMono(nn.Module):
             if height == 192 and width == 640:
                 self.dilation = [[1, 2, 3], [1, 2, 3], [1, 2, 3, 1, 2, 3, 2, 4, 6]]
             elif height == 320 and width == 1024:
+                self.dilation = [[1, 2, 3], [1, 2, 3], [1, 2, 3, 1, 2, 3, 2, 4, 6]]
+            else:
                 self.dilation = [[1, 2, 3], [1, 2, 3], [1, 2, 3, 1, 2, 3, 2, 4, 6]]
 
         for g in global_block_type:
