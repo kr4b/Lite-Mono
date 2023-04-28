@@ -1,7 +1,48 @@
 from __future__ import absolute_import, division, print_function
+
+import struct
 import os
 import numpy as np
+
 from collections import Counter
+
+def read_pfm(calib_file, filename):
+    focal = 0
+    doffs = 0
+    baseline = 0
+
+    # Calibration parameters, see: https://vision.middlebury.edu/stereo/data/scenes2014/
+    with open(calib_file, "r") as f:
+        for line in f.readlines():
+            if "cam0" in line:
+                focal = float(line[6:line.find(" ")])
+            if "doffs" in line:
+                doffs = float(line[6:])
+            if "baseline" in line:
+                baseline = float(line[9:]) / 1000
+
+    with open(filename, "rb") as pfm_file:
+        line1, line2, line3 = (pfm_file.readline().decode('latin-1').strip() for _ in range(3))
+
+        assert line1 in ("PF", "Pf"), "{}, {}, {}, {}".format(filename, line1, line2, line3)
+
+        channels = 3 if "PF" in line1 else 1
+        width, height = (int(s) for s in line2.split())
+        scale_endianess = float(line3)
+        bigendian = scale_endianess > 0
+        scale = abs(scale_endianess)
+        buffer = pfm_file.read()
+        samples = width * height * channels
+
+        assert len(buffer) == samples * 4
+
+        fmt = f'{"<>"[bigendian]}{samples}f'
+        decoded = struct.unpack(fmt, buffer)
+        shape = (height, width, 3) if channels == 3 else (height, width)
+        disp = np.flipud(np.reshape(decoded, shape))
+
+        # return disp
+        return (focal * baseline) / (disp + doffs)
 
 
 def load_velodyne_points(filename):

@@ -166,6 +166,8 @@ def test_simple(args):
             name_dest_npy = os.path.join(output_directory, "{}_disp.npy".format(output_name))
             np.save(name_dest_npy, scaled_disp.cpu().numpy())
 
+            _, depth_resized = disp_to_depth(disp_resized, 0.1, 100)
+
             # Saving colormapped depth image
             disp_resized_np = disp_resized.squeeze().cpu().numpy()
             vmax = np.percentile(disp_resized_np, 95)
@@ -174,7 +176,7 @@ def test_simple(args):
             colormapped_im = (mapper.to_rgba(disp_resized_np)[:, :, :3] * 255).astype(np.uint8)
             im = pil.fromarray(colormapped_im)
 
-            name_dest_im = os.path.join(output_directory, "{}_disp.jpeg".format(output_name))
+            name_dest_im = os.path.join(output_directory, "{}_disp.jpg".format(output_name))
             im.save(name_dest_im)
 
             print("   Processed {:d} of {:d} images - saved predictions to:".format(

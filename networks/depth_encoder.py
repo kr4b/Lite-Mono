@@ -313,6 +313,8 @@ class LiteMono(nn.Module):
             else:
                 self.dilation = [[1, 2, 3], [1, 2, 3], [1, 2, 3, 1, 2, 3, 2, 4, 6]]
 
+            self.dilation = self.dilation
+
         elif model == 'lite-mono-small':
             self.num_ch_enc = np.array([48, 80, 128])
             self.depth = [4, 4, 7]
