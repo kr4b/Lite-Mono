@@ -5,6 +5,7 @@ import torch.nn.functional as F
 from timm.models.layers import DropPath
 import math
 import torch.cuda
+import squeeze_excitation
 
 
 class PositionalEncodingFourier(nn.Module):
@@ -179,7 +180,7 @@ class DilatedConv(nn.Module):
     A single Dilated Convolution layer in the Consecutive Dilated Convolutions (CDC) module.
     """
     def __init__(self, dim, k, dilation=1, stride=1, drop_path=0.,
-                 layer_scale_init_value=1e-6, expan_ratio=6):
+                 layer_scale_init_value=1e-6, expan_ratio=6, num_ch=0):
         """
         :param dim: input dimension
         :param k: kernel size
@@ -201,6 +202,7 @@ class DilatedConv(nn.Module):
         self.gamma = nn.Parameter(layer_scale_init_value * torch.ones(dim),
                                   requires_grad=True) if layer_scale_init_value > 0 else None
         self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
+        self.SEB = squeeze_excitation.SEBlock(num_ch)
 
     def forward(self, x):
         input = x
@@ -217,6 +219,7 @@ class DilatedConv(nn.Module):
         x = x.permute(0, 3, 1, 2)  # (N, H, W, C) -> (N, C, H, W)
 
         x = input + self.drop_path(x)
+        x = self.SEB(x)
 
         return x
 
@@ -240,6 +243,7 @@ class LGFI(nn.Module):
                                       requires_grad=True) if layer_scale_init_value > 0 else None
         self.xca = XCA(self.dim, num_heads=num_heads, qkv_bias=qkv_bias, attn_drop=attn_drop, proj_drop=drop)
 
+        self.SEB = squeeze_excitation.SEBlock(10)
         self.norm = LayerNorm(self.dim, eps=1e-6)
         self.pwconv1 = nn.Linear(self.dim, expan_ratio * self.dim)
         self.act = nn.GELU()
@@ -262,7 +266,7 @@ class LGFI(nn.Module):
         x = x + self.gamma_xca * self.xca(self.norm_xca(x))
 
         x = x.reshape(B, H, W, C)
-
+ 
         # Inverted Bottleneck
         x = self.norm(x)
         x = self.pwconv1(x)
@@ -391,7 +395,7 @@ class LiteMono(nn.Module):
                 else:
                     stage_blocks.append(DilatedConv(dim=self.dims[i], k=3, dilation=self.dilation[i][j], drop_path=dp_rates[cur + j],
                                                     layer_scale_init_value=layer_scale_init_value,
-                                                    expan_ratio=expan_ratio))
+                                                    expan_ratio=expan_ratio, num_ch = self.num_ch_enc[i]))
 
             self.stages.append(nn.Sequential(*stage_blocks))
             cur += self.depth[i]
